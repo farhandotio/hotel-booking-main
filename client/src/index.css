@@ -1,0 +1,29 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2563eb;
+  --color-secondary: #fbbf24;
+}
+
+* {
+  font-family: Outfit;
+}
+
+.font-playfair {
+  font-family: Playfair !important;
+}
+
+.btn{
+padding: 8px 16px;
+font-size: 14px;
+font-weight: 500;
+border: 1px solid #d1d5dc;
+cursor: pointer;
+border-radius: 4px;
+transition:cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn:hover{
+  background: #f3f4f6;
+}
