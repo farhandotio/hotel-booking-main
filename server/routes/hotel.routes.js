@@ -1,6 +1,6 @@
 import express from "express"
-import { registerHotel } from "../controllers/hotelController.js"
-import { protect } from "../middleware/authMiddleware.js"
+import { registerHotel } from "../controllers/hotel.controller.js"
+import { protect } from "../middleware/auth.middleware.js"
 
 const hotelRouter = express.Router()
 

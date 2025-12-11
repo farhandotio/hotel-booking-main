@@ -4,10 +4,11 @@ import cors from "cors";
 import connectDB from "./configs/db.js";
 import connectCloudinary from "./configs/cloudinary.js";
 import { clerkMiddleware } from "@clerk/express";
-import clerkWebhook from "./controllers/clerkWebhooks.js";
-import userRouter from "./routes/userRoutes.js";
-import hotelRouter from "./routes/hotelRoutes.js";
-import roomRouter from "./routes/roomRoutes.js";
+import clerkWebhook from "./controllers/clerkWebhooks.controller.js";
+import userRouter from "./routes/user.routes.js";
+import hotelRouter from "./routes/hotel.routes.js";
+import roomRouter from "./routes/room.routes.js";
+import bookingRouter from './routes/booking.routes.js';
 
 connectDB();
 connectCloudinary()
@@ -27,6 +28,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRouter)
 app.use("/api/hotel", hotelRouter)
 app.use("/api/room", roomRouter)
+app.use('/api/bookings', bookingRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
