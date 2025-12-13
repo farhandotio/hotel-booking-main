@@ -1,12 +1,23 @@
+import { getAuth } from '@clerk/express';
 import userModel from '../models/user.model.js';
 
 export const protect = async (req, res, next) => {
-  const { userId } = req.auth;
-  if (!userId) {
-    return res.status(401).json({ success: false, message: 'not authenticated' });
-  } else {
-    const user = await userModel.findOne(userId);
-    req.user = user;
+  try {
+    const { userId } = getAuth(req); // properly read Clerk auth info
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+
+    const user = await userModel.findById(userId).exec(); // correct Mongoose usage
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    req.user = user; // now your controllers can use req.user safely
     next();
+  } catch (err) {
+    console.error('protect middleware error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 };

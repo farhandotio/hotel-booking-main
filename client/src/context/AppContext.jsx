@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { toast } from 'react-hot-toast';
 
@@ -18,29 +18,29 @@ export const AppProvider = ({ children }) => {
   const [showHotelReg, setShowHotelReg] = useState(false);
   const [searchedCities, setSearchedCities] = useState([]);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
+      const token = await getToken();
+      console.log('Token from Clerk:', token);
+
+      if (!token) return;
+
       const { data } = await axios.get('/api/user', {
-        headers: { Authorization: `Bearer ${await getToken()}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (data.success) {
         setIsOwner(data.role === 'hotelOwner');
-        searchedCities(data.recentSearchedCities);
-      } else
-        setTimeout(() => {
-          fetchUser();
-        }, 5000);
+        setSearchedCities(data.recentSearchedCities || []);
+      }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error?.response?.data?.message || error.message);
     }
-  };
+  }, [getToken]);
 
   useEffect(() => {
-    if (user) {
-      fetchUser();
-    }
-  }, [user]);
+    if (user) fetchUser();
+  }, [user, fetchUser]);
 
   const value = {
     currency,
