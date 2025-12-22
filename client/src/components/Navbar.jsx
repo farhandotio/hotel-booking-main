@@ -22,7 +22,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
 
   // Redux state theke user nawa
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -90,7 +90,7 @@ const Navbar = () => {
             />
           </Link>
         ))}
-        {isAuthenticated && (
+        {user?.role === 'hotelOwner' && (
           <button
             onClick={() => navigate('/owner')}
             className={`border px-4 py-1 text-sm font-medium rounded-full cursor-pointer transition-all hover:bg-black hover:text-white ${
@@ -112,7 +112,7 @@ const Navbar = () => {
           } h-7 cursor-pointer hover:scale-110 transition-transform`}
         />
 
-        {isAuthenticated ? (
+        {user ? (
           <div className="relative">
             <div
               className="flex items-center gap-2 cursor-pointer p-1 rounded-full border border-transparent transition-all"
@@ -164,7 +164,7 @@ const Navbar = () => {
 
       {/* Mobile Menu Button */}
       <div className="flex items-center gap-3 md:hidden">
-        {isAuthenticated && (
+        {user && (
           <img
             src={user?.image || assets.profile_img}
             onClick={() => navigate('/my-bookings')}
@@ -201,16 +201,14 @@ const Navbar = () => {
           </Link>
         ))}
 
-        {isAuthenticated ? (
-          <div className="flex flex-col items-center gap-4 mt-4 w-full px-10">
-            <div className="h-[1px] bg-gray-100 w-full mb-4"></div>
-            <Link to="/owner" onClick={() => setIsMenuOpen(false)}>
-              Dashboard
-            </Link>
-            <Link to="/my-bookings" onClick={() => setIsMenuOpen(false)}>
-              My Bookings
-            </Link>
-            <button onClick={handleLogout} className="text-red-500 mt-4 text-xl">
+        {user ? (
+          <div className="flex flex-col items-center gap-4 w-full px-10">
+            {user?.role === 'hotelOwner' && (
+              <Link to="/owner" onClick={() => setIsMenuOpen(false)}>
+                Dashboard
+              </Link>
+            )}
+            <button onClick={handleLogout} className="text-red-500 text-xl">
               Logout
             </button>
           </div>
