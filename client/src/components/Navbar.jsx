@@ -1,20 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { assets } from "../assets/assets";
-import { useClerk, useUser, UserButton } from "@clerk/clerk-react";
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logoutUser } from '../app/feature/auth/authSlice';
+import { assets } from '../assets/assets';
+import { toast } from 'react-hot-toast';
 
 const BookIcon = () => (
-  <svg
-    className="w-4 h-4 text-gray-700"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
-      stroke="currentColor"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth="2"
@@ -24,43 +17,56 @@ const BookIcon = () => (
 );
 
 const Navbar = () => {
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Hotels", path: "/rooms" },
-    { name: "Experience", path: "/" },
-    { name: "About", path: "/" },
-  ];
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  // Redux state theke user nawa
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const { openSignIn } = useClerk();
-  const { user } = useUser();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Hotels', path: '/rooms' },
+    { name: 'Experience', path: '/' },
+    { name: 'About', path: '/' },
+  ];
+
+  // Logout Handler
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      toast.success('Logged out successfully');
+      setShowDropdown(false);
+      setIsMenuOpen(false);
+      navigate('/');
+    } catch (error) {
+      toast.error('Logout failed');
+    }
+  };
 
   useEffect(() => {
-    if (location.pathname !== "/") {
-      setIsScrolled(true);
-      return;
-    } else {
-      setIsScrolled(false);
-    }
-    setIsScrolled((prev) => (location.pathname !== "/" ? true : prev));
-
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      if (location.pathname === '/') {
+        setIsScrolled(window.scrollY > 10);
+      } else {
+        setIsScrolled(true);
+      }
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
 
   return (
     <nav
       className={`fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-24 xl:px-32 transition-all duration-500 z-50 ${
         isScrolled
-          ? "bg-white/80 shadow-md text-gray-700 backdrop-blur-lg py-3 md:py-4"
-          : "py-4 md:py-6"
+          ? 'bg-white/90 text-gray-700 backdrop-blur-lg py-3 md:py-4'
+          : 'py-4 md:py-6 text-white'
       }`}
     >
       {/* Logo */}
@@ -68,36 +74,32 @@ const Navbar = () => {
         <img
           src={assets.logo}
           alt="logo"
-          className={`h-9 w-13 ${isScrolled && "invert opacity-80"}`}
+          className={`h-9 w-13 transition-all ${isScrolled ? 'invert opacity-80' : ''}`}
         />
       </Link>
 
       {/* Desktop Nav */}
       <div className="hidden md:flex items-center gap-4 lg:gap-8">
         {navLinks.map((link, i) => (
-          <Link
-            key={i}
-            to={link.path}
-            className={`group flex flex-col gap-0.5 ${
-              isScrolled ? "text-gray-700" : "text-white"
-            }`}
-          >
+          <Link key={i} to={link.path} className="group flex flex-col gap-0.5 font-medium">
             {link.name}
             <div
               className={`${
-                isScrolled ? "bg-gray-700" : "bg-white"
+                isScrolled ? 'bg-gray-700' : 'bg-white'
               } h-0.5 w-0 group-hover:w-full transition-all duration-300`}
             />
           </Link>
         ))}
-        <button
-          className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${
-            isScrolled ? "text-black" : "text-white"
-          } transition-all`}
-          onClick={() => navigate("/owner")}
-        >
-          Dashboard
-        </button>
+        {isAuthenticated && (
+          <button
+            onClick={() => navigate('/owner')}
+            className={`border px-4 py-1 text-sm font-medium rounded-full cursor-pointer transition-all hover:bg-black hover:text-white ${
+              isScrolled ? 'border-black text-black' : 'border-white text-white'
+            }`}
+          >
+            Dashboard
+          </button>
+        )}
       </div>
 
       {/* Desktop Right */}
@@ -106,24 +108,54 @@ const Navbar = () => {
           src={assets.searchIcon}
           alt="search"
           className={`${
-            isScrolled && "invert"
-          } h-7 transition-all duration-500`}
+            isScrolled ? 'invert' : ''
+          } h-7 cursor-pointer hover:scale-110 transition-transform`}
         />
 
-        {user ? (
-          <UserButton>
-            <UserButton.MenuItems>
-              <UserButton.Action
-                label="My Bookings"
-                labelIcon={<BookIcon />}
-                onClick={() => navigate("/my-bookings")}
+        {isAuthenticated ? (
+          <div className="relative">
+            <div
+              className="flex items-center gap-2 cursor-pointer p-1 rounded-full border border-transparent transition-all"
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              <img
+                src={user?.image || assets.profile_img}
+                alt="profile"
+                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
               />
-            </UserButton.MenuItems>
-          </UserButton>
+            </div>
+
+            {/* Profile Dropdown */}
+            {showDropdown && (
+              <div className="absolute right-0 mt-3 w-56 bg-white shadow-2xl rounded-2xl py-3 text-gray-800 border border-gray-100 animate-in fade-in zoom-in duration-200">
+                <div className="px-4 py-2 border-b border-gray-50 mb-2">
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                    My Account
+                  </p>
+                  <p className="text-sm font-semibold truncate">{user?.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    navigate('/my-bookings');
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                >
+                  <BookIcon /> My Bookings
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-500 flex items-center gap-3 transition-colors mt-2"
+                >
+                  <span className="text-lg">➔</span> Logout
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <button
-            onClick={openSignIn}
-            className="bg-black cursor-pointer text-white px-8 py-2.5 rounded-full ml-4 transition-all duration-500"
+            onClick={() => navigate('/auth')}
+            className="bg-black text-white px-8 py-2.5 rounded-full hover:bg-gray-800 transition-all shadow-lg active:scale-95"
           >
             Login
           </button>
@@ -131,59 +163,64 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu Button */}
-
       <div className="flex items-center gap-3 md:hidden">
-        {user && (
-          <UserButton>
-            <UserButton.MenuItems>
-              <UserButton.Action
-                label="My Bookings"
-                labelIcon={<BookIcon />}
-                onClick={() => navigate("/my-bookings")}
-              />
-            </UserButton.MenuItems>
-          </UserButton>
+        {isAuthenticated && (
+          <img
+            src={user?.image || assets.profile_img}
+            onClick={() => navigate('/my-bookings')}
+            className="h-9 w-9 rounded-full object-cover border-2 border-white"
+            alt="profile"
+          />
         )}
-
         <img
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           src={assets.menuIcon}
-          className={`${isScrolled && "invert"} h-4`}
+          className={`${isScrolled ? 'invert' : ''} h-6 cursor-pointer`}
           alt="menu"
         />
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Overlay */}
       <div
-        className={`fixed top-0 left-0 w-full h-screen bg-white text-base flex flex-col md:hidden items-center justify-center gap-6 font-medium text-gray-800 transition-all duration-500 ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 w-full h-screen bg-white text-lg flex flex-col md:hidden items-center justify-center gap-6 font-semibold text-gray-800 transition-all duration-500 z-[100] ${
+          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <button
-          className="absolute top-6 right-5"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          <img src={assets.closeIcon} alt="close" className="h-5" />
+        <button className="absolute top-6 right-6 p-2" onClick={() => setIsMenuOpen(false)}>
+          <img src={assets.closeIcon} alt="close" className="h-6" />
         </button>
 
         {navLinks.map((link, i) => (
-          <a key={i} href={link.path} onClick={() => setIsMenuOpen(false)}>
+          <Link
+            key={i}
+            to={link.path}
+            onClick={() => setIsMenuOpen(false)}
+            className="hover:text-black transition-colors"
+          >
             {link.name}
-          </a>
+          </Link>
         ))}
 
-        {user && (
+        {isAuthenticated ? (
+          <div className="flex flex-col items-center gap-4 mt-4 w-full px-10">
+            <div className="h-[1px] bg-gray-100 w-full mb-4"></div>
+            <Link to="/owner" onClick={() => setIsMenuOpen(false)}>
+              Dashboard
+            </Link>
+            <Link to="/my-bookings" onClick={() => setIsMenuOpen(false)}>
+              My Bookings
+            </Link>
+            <button onClick={handleLogout} className="text-red-500 mt-4 text-xl">
+              Logout
+            </button>
+          </div>
+        ) : (
           <button
-            className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
-            onClick={() => navigate("/owner")}
-          >
-            Dashboard
-          </button>
-        )}
-        {!user && (
-          <button
-            onClick={openSignIn}
-            className="bg-black cursor-pointer text-white px-8 py-2.5 rounded-full transition-all duration-500"
+            onClick={() => {
+              navigate('/auth');
+              setIsMenuOpen(false);
+            }}
+            className="bg-black text-white px-10 py-3 rounded-full mt-4 shadow-xl"
           >
             Login
           </button>
