@@ -13,11 +13,12 @@ import AddRoom from './pages/hotelOwner/AddRoom';
 import ListRoom from './pages/hotelOwner/ListRoom';
 import Auth from './pages/Auth';
 import { getUser } from './app/feature/auth/authSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const App = () => {
   const dispatch = useDispatch();
   const isOwnerPath = useLocation().pathname.includes('owner');
+  const { hotelReg } = useSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(getUser());
@@ -26,7 +27,7 @@ const App = () => {
   return (
     <div>
       {!isOwnerPath && <Navbar />}
-      {false && <HotelReg />}
+      {hotelReg && <HotelReg />}
       <div className="min-h-[70vh]">
         <Routes>
           <Route path="/" element={<Home />} />

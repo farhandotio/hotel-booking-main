@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logoutUser } from '../app/feature/auth/authSlice';
+import { logoutUser, toggleHotelReg } from '../app/feature/auth/authSlice';
 import { assets } from '../assets/assets';
 import { toast } from 'react-hot-toast';
 
@@ -21,8 +21,8 @@ const Navbar = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  // Redux state theke user nawa
-  const { user } = useSelector((state) => state.auth);
+  // Redux state theke user info, authentication status ebong role nawa
+  const { user, isAuthenticated, isHotelOwner, hotelReg } = useSelector((state) => state.auth);
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,7 +35,6 @@ const Navbar = () => {
     { name: 'About', path: '/' },
   ];
 
-  // Logout Handler
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
@@ -56,7 +55,7 @@ const Navbar = () => {
         setIsScrolled(true);
       }
     };
-    handleScroll(); // Initial check
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
@@ -65,7 +64,7 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-24 xl:px-32 transition-all duration-500 z-50 ${
         isScrolled
-          ? 'bg-white/90 text-gray-700 backdrop-blur-lg py-3 md:py-4'
+          ? 'bg-white/90 text-gray-700 backdrop-blur-lg py-3 md:py-4 shadow-sm'
           : 'py-4 md:py-6 text-white'
       }`}
     >
@@ -90,20 +89,21 @@ const Navbar = () => {
             />
           </Link>
         ))}
-        {user?.role === 'hotelOwner' && (
+        {/* State-e thaka isHotelOwner use kora hoyeche */}
+        {isAuthenticated && (
           <button
-            onClick={() => navigate('/owner')}
+            onClick={() => (isHotelOwner ? navigate('/owner') : dispatch(toggleHotelReg()))}
             className={`border px-4 py-1 text-sm font-medium rounded-full cursor-pointer transition-all hover:bg-black hover:text-white ${
               isScrolled ? 'border-black text-black' : 'border-white text-white'
             }`}
           >
-            Dashboard
+            {isHotelOwner ? 'Dashboard' : 'List Your Hotel'}
           </button>
         )}
       </div>
 
       {/* Desktop Right */}
-      <div className="hidden md:flex items-center gap-4">
+      <div className="flex items-center justify-end w-full max-md:mx-5 md:w-fit gap-4">
         <img
           src={assets.searchIcon}
           alt="search"
@@ -112,16 +112,16 @@ const Navbar = () => {
           } h-7 cursor-pointer hover:scale-110 transition-transform`}
         />
 
-        {user ? (
+        {isAuthenticated ? (
           <div className="relative">
             <div
-              className="flex items-center gap-2 cursor-pointer p-1 rounded-full border border-transparent transition-all"
+              className="flex items-center gap-2 cursor-pointer p-1"
               onClick={() => setShowDropdown(!showDropdown)}
             >
               <img
                 src={user?.image || assets.profile_img}
                 alt="profile"
-                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
+                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm hover:border-gray-300 transition-all"
               />
             </div>
 
@@ -163,15 +163,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu Button */}
-      <div className="flex items-center gap-3 md:hidden">
-        {user && (
-          <img
-            src={user?.image || assets.profile_img}
-            onClick={() => navigate('/my-bookings')}
-            className="h-9 w-9 rounded-full object-cover border-2 border-white"
-            alt="profile"
-          />
-        )}
+      <div className="md:hidden flex items-center gap-3">
         <img
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           src={assets.menuIcon}
@@ -191,25 +183,21 @@ const Navbar = () => {
         </button>
 
         {navLinks.map((link, i) => (
-          <Link
-            key={i}
-            to={link.path}
-            onClick={() => setIsMenuOpen(false)}
-            className="hover:text-black transition-colors"
-          >
+          <Link key={i} to={link.path} onClick={() => setIsMenuOpen(false)}>
             {link.name}
           </Link>
         ))}
 
-        {user ? (
+        {isAuthenticated ? (
           <div className="flex flex-col items-center gap-4 w-full px-10">
-            {user?.role === 'hotelOwner' && (
-              <Link to="/owner" onClick={() => setIsMenuOpen(false)}>
-                Dashboard
-              </Link>
-            )}
-            <button onClick={handleLogout} className="text-red-500 text-xl">
-              Logout
+            <button
+              className="px-5 py-2 bg-black rounded-full text-white text-sm"
+              onClick={() => {
+                setIsMenuOpen(false);
+                isHotelOwner ? navigate('/owner') : dispatch(toggleHotelReg());
+              }}
+            >
+              {isHotelOwner ? 'Dashboard' : 'List Your Hotel'}
             </button>
           </div>
         ) : (
