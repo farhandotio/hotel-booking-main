@@ -33,6 +33,10 @@ const AddRoom = () => {
   const onSubmitHandelar = async (e) => {
     e.preventDefault();
 
+    if (!inputs.roomType || !inputs.pricePerNight) {
+      return toast.error('Please fill all required fields');
+    }
+
     const formData = new FormData();
     formData.append('roomType', inputs.roomType);
     formData.append('pricePerNight', inputs.pricePerNight);
@@ -46,15 +50,10 @@ const AddRoom = () => {
       }
     });
 
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-
     const resultAction = await dispatch(createRoom(formData));
 
     if (createRoom.fulfilled.match(resultAction)) {
       toast.success('Room added successfully!');
-      // Form Reset logic
       setInputs({
         roomType: '',
         pricePerNight: '',
@@ -89,7 +88,7 @@ const AddRoom = () => {
               <img
                 src={images[key] ? URL.createObjectURL(images[key]) : assets.uploadArea}
                 alt=""
-                className={images[key] ? 'w-full h-full object-cover' : 'w-10 opacity-50'}
+                className={images[key] ? 'w-full h-full object-cover' : 'w-full object-cover h-full opacity-50'}
               />
             </div>
             <input

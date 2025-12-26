@@ -115,10 +115,8 @@ const roomSlice = createSlice({
 
       // TOGGLE AVAILABILITY
       .addCase(toggleRoomAvailability.fulfilled, (state, action) => {
-        // Local array theke oi specific room er status change kora jate refresh lagle na
         const index = state.ownerRooms.findIndex((r) => r._id === action.payload.roomId);
         if (index !== -1) {
-          // Backend-er variable 'isAisAvailable' spelling tai use kora hoyeche
           state.ownerRooms[index].isAisAvailable = !state.ownerRooms[index].isAisAvailable;
         }
       });
