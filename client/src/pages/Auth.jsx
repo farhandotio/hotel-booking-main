@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, registerUser, clearError } from '../app/feature/auth/authSlice';
+import { loginUser, registerUser, clearError } from '../app/feature/authSlice';
 import { toast } from 'react-hot-toast'; // Toast properly handle korar jonno
 
 const Auth = () => {

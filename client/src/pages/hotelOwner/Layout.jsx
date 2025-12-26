@@ -1,9 +1,19 @@
-import React from "react";
-import Navbar from "../../components/hotelOwner/Navbar";
-import Sidebar from "../../components/hotelOwner/Sidebar";
-import { Outlet } from "react-router-dom";
+import React, { useEffect } from 'react';
+import Navbar from '../../components/hotelOwner/Navbar';
+import Sidebar from '../../components/hotelOwner/Sidebar';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const Layout = () => {
+  const { isHotelOwner } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isHotelOwner) {
+      navigate('/');
+    }
+  }, []);
+
   return (
     <div className="flex flex-col h-screen">
       <Navbar />

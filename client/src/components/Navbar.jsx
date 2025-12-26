@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logoutUser, toggleHotelReg } from '../app/feature/auth/authSlice';
+import { logoutUser, toggleHotelReg } from '../app/feature/authSlice';
 import { assets } from '../assets/assets';
 import { toast } from 'react-hot-toast';
 

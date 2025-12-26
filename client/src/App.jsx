@@ -12,7 +12,7 @@ import Dashboard from './pages/hotelOwner/Dashboard';
 import AddRoom from './pages/hotelOwner/AddRoom';
 import ListRoom from './pages/hotelOwner/ListRoom';
 import Auth from './pages/Auth';
-import { getUser } from './app/feature/auth/authSlice';
+import { getUser } from './app/feature/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 const App = () => {

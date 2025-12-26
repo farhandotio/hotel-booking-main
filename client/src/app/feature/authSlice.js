@@ -1,17 +1,23 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import API from './authApi';
+import axios from 'axios';
+import { registerHotel } from './hotelSlice';
+
+const API = axios.create({
+  baseURL: 'https://hotel-booking-main-z6lo.onrender.com/api/auth',
+  withCredentials: true,
+});
 
 const initialState = {
   user: null,
   isAuthenticated: false,
   searchCities: null,
   isHotelOwner: false,
-  hotelReg: false, // Hotel registration modal/section toggle state
+  hotelReg: false,
   loading: false,
   error: null,
 };
 
-// --- Helper Function to Check Role ---
+// --- Helper Function ---
 const checkIsOwner = (user) => {
   return user && user.role === 'hotelOwner';
 };
@@ -64,23 +70,16 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    // Hotel Registration form open/close korar jonno
     toggleHotelReg: (state) => {
       state.hotelReg = !state.hotelReg;
     },
-    // State reset korar jonno
     logoutLocal: (state) => {
-      state.user = null;
-      state.isAuthenticated = false;
-      state.isHotelOwner = false;
-      state.searchCities = null;
-      state.hotelReg = false;
-      state.error = null;
+      return initialState; // Sob kichu initial state-e niye jabe
     },
   },
   extraReducers: (builder) => {
     builder
-      // REGISTER
+      // REGISTER USER
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
       })
@@ -98,7 +97,7 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      // LOGIN
+      // LOGIN USER
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
       })
@@ -116,7 +115,7 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      // GET USER
+      // GET USER (SESSION CHECK)
       .addCase(getUser.pending, (state) => {
         state.loading = true;
       })
@@ -138,13 +137,15 @@ const authSlice = createSlice({
 
       // LOGOUT
       .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
-        state.isAuthenticated = false;
-        state.isHotelOwner = false;
-        state.searchCities = null;
-        state.hotelReg = false; // Logout hole form/modal-o off hobe
-        state.loading = false;
-        state.error = null;
+        return initialState;
+      })
+
+      .addCase(registerHotel.fulfilled, (state) => {
+        state.isHotelOwner = true;
+        state.hotelReg = false;
+        if (state.user) {
+          state.user.role = 'hotelOwner';
+        }
       });
   },
 });
