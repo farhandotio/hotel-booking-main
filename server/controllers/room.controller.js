@@ -49,6 +49,25 @@ export const createRoom = async (req, res) => {
   }
 };
 
+export const getRooms = async (req, res) => {
+  try {
+    // FIX: Schema-te 'isAvailable' ache, tai eikhaner 'isAisAvailable' soriye felun
+    const rooms = await roomModel
+      .find({ isAvailable: true })
+      .populate({
+        path: 'hotel',
+        populate: {
+          path: 'owner',
+          select: 'image',
+        },
+      })
+      .sort({ createdAt: -1 });
+    res.json({ success: true, rooms });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export const getOwnerRooms = async (req, res) => {
   try {
     // Vul: await hotelModel({ owner: ... }) chilo, eita findOne hobe
@@ -68,29 +87,13 @@ export const getOwnerRooms = async (req, res) => {
   }
 };
 
-export const getRooms = async (req, res) => {
-  try {
-    const rooms = await roomModel
-      .find({ isAisAvailable: true })
-      .populate({
-        path: 'hotel',
-        populate: {
-          path: 'owner',
-          select: 'image',
-        },
-      })
-      .sort({ createdAt: -1 });
-    res.json({ success: true, rooms });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
-  }
-};
-
 export const toggleRoomAvailability = async (req, res) => {
   try {
     const { roomId } = req.body;
     const roomData = await roomModel.findById(roomId);
-    roomData.isAisAvailable = !roomData.isAisAvailable;
+
+    // FIX: Schema logic onujayi 'isAvailable' update koren
+    roomData.isAvailable = !roomData.isAvailable;
 
     await roomData.save();
 

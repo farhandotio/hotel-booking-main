@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://hotel-booking-main-z6lo.onrender.com/api/room',
+  baseURL: 'http://localhost:3000/api/room',
   withCredentials: true,
 });
 
