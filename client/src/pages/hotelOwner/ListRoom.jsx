@@ -5,7 +5,7 @@ import { getOwnerRooms, toggleRoomAvailability } from '../../app/feature/roomSli
 
 const ListRoom = () => {
   const dispatch = useDispatch();
-  const { rooms, loading } = useSelector((state) => state.room);
+  const { ownerRooms, loading } = useSelector((state) => state.room);
 
   useEffect(() => {
     dispatch(getOwnerRooms());
@@ -37,8 +37,8 @@ const ListRoom = () => {
           </thead>
 
           <tbody className="text-sm">
-            {rooms.length > 0 ? (
-              rooms.map((item) => (
+            {ownerRooms.length > 0 ? (
+              ownerRooms.map((item) => (
                 <tr key={item._id} className="hover:bg-gray-50">
                   <td className="py-3 px-4 text-gray-700 border-t border-gray-200">
                     {item.roomType}

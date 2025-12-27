@@ -1,11 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { roomsDummyData } from "../assets/assets";
 import HotelCard from "./HotelCard";
 import Title from "./Title";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllRooms } from "../app/feature/roomSlice";
 
 const FeatureDestination = () => {
-  const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+  const { rooms, loading } = useSelector((state) => state.room);
+  
+  useEffect(() => {
+    dispatch(getAllRooms());
+  }, []);
 
   return (
     <div className="flex flex-col w-full items-center px-6 md:px-16 lg:px-24 xl:px-32 bg-slate-50 py-20">
@@ -14,7 +22,7 @@ const FeatureDestination = () => {
         subTitle="Discover our handpicked selection of exceptional properties around the world, offering unparalleled luxury and unforgettable experience."
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mt-20">
-        {roomsDummyData.slice(0, 4).map((room, index) => (
+        {rooms.slice(0, 4).map((room, index) => (
           <HotelCard
             onClick={() => {
               navigate(`/rooms/${room._id}`), scrollTo(0, 0);
@@ -28,7 +36,7 @@ const FeatureDestination = () => {
 
       <button
         onClick={() => {
-          navigate("/rooms");
+          navigate('/rooms');
           scrollTo(0, 0);
         }}
         className="btn my-16"
