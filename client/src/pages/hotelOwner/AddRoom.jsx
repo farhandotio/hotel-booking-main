@@ -33,8 +33,15 @@ const AddRoom = () => {
   const onSubmitHandelar = async (e) => {
     e.preventDefault();
 
+    // Field Validation Toast
     if (!inputs.roomType || !inputs.pricePerNight) {
       return toast.error('Please fill all required fields');
+    }
+
+    // Image Validation Toast
+    const hasImages = Object.values(images).some((img) => img !== null);
+    if (!hasImages) {
+      return toast.error('Please upload at least one image');
     }
 
     const formData = new FormData();
@@ -50,24 +57,35 @@ const AddRoom = () => {
       }
     });
 
-    const resultAction = await dispatch(createRoom(formData));
+    // Loading toast start
+    const toastId = toast.loading('Creating room, please wait...');
 
-    if (createRoom.fulfilled.match(resultAction)) {
-      toast.success('Room added successfully!');
-      setInputs({
-        roomType: '',
-        pricePerNight: '',
-        amenities: {
-          'Free Wifi': false,
-          'Free Breakfast': false,
-          'Room Service': false,
-          'Mountain View': false,
-          'Pool Access': false,
-        },
-      });
-      setImages({ 1: null, 2: null, 3: null, 4: null });
-    } else {
-      toast.error(resultAction.payload || 'Something went wrong');
+    try {
+      const resultAction = await dispatch(createRoom(formData));
+
+      if (createRoom.fulfilled.match(resultAction)) {
+        // Success Toast
+        toast.success('Room added successfully!', { id: toastId });
+
+        // Reset Form
+        setInputs({
+          roomType: '',
+          pricePerNight: '',
+          amenities: {
+            'Free Wifi': false,
+            'Free Breakfast': false,
+            'Room Service': false,
+            'Mountain View': false,
+            'Pool Access': false,
+          },
+        });
+        setImages({ 1: null, 2: null, 3: null, 4: null });
+      } else {
+        // Error Toast from Backend
+        toast.error(resultAction.payload || 'Failed to create room', { id: toastId });
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred', { id: toastId });
     }
   };
 
@@ -88,7 +106,11 @@ const AddRoom = () => {
               <img
                 src={images[key] ? URL.createObjectURL(images[key]) : assets.uploadArea}
                 alt=""
-                className={images[key] ? 'w-full h-full object-cover' : 'w-full object-cover h-full opacity-50'}
+                className={
+                  images[key]
+                    ? 'w-full h-full object-cover'
+                    : 'w-full object-cover h-full opacity-50'
+                }
               />
             </div>
             <input

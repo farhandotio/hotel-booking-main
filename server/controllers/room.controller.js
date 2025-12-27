@@ -6,8 +6,7 @@ export const createRoom = async (req, res) => {
   try {
     const { roomType, pricePerNight, amenities } = req.body;
 
-    // Check koren req.auth.userId thik ache kina (Clerk use korle thik thakar kotha)
-    const hotel = await hotelModel.findOne({ owner: req.auth.userId });
+    const hotel = await hotelModel.findOne({ owner: req.user._id });
 
     if (!hotel) {
       return res.json({ success: false, message: 'No Hotel Found for this owner' });
@@ -30,7 +29,7 @@ export const createRoom = async (req, res) => {
     const newRoom = await roomModel.create({
       hotel: hotel._id,
       roomType,
-      pricePerNight: Number(pricePerNight), // + sign er bodole Number use kora safer
+      pricePerNight: Number(pricePerNight),
       amenities: JSON.parse(amenities),
       images,
     });

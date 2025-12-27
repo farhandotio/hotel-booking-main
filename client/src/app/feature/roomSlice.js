@@ -2,28 +2,28 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:3000/api/room',
+  baseURL: 'https://hotel-booking-main-z6lo.onrender.com/api/room',
   withCredentials: true,
 });
 
 // --- Thunks ---
 
-// 1. Create Room (FormData handle korbe)
+// 1. Create Room
 export const createRoom = createAsyncThunk(
   'room/createRoom',
   async (roomData, { rejectWithValue }) => {
     try {
-      // Backend-e upload.array ("images") use kora hoyeche, tai headers automatic handle hobe
       const { data } = await API.post('/', roomData);
       if (!data.success) return rejectWithValue(data.message);
       return data;
     } catch (err) {
+      // Backend crash ba network error handle korbe
       return rejectWithValue(err.response?.data?.message || 'Failed to create room');
     }
   }
 );
 
-// 2. Get All Available Rooms
+// 2. Get All Available Rooms (For Home/Search Page)
 export const getAllRooms = createAsyncThunk('room/getAllRooms', async (_, { rejectWithValue }) => {
   try {
     const { data } = await API.get('/');
@@ -34,7 +34,7 @@ export const getAllRooms = createAsyncThunk('room/getAllRooms', async (_, { reje
   }
 });
 
-// 3. Get Owner Specific Rooms
+// 3. Get Owner Specific Rooms (For Dashboard)
 export const getOwnerRooms = createAsyncThunk(
   'room/getOwnerRooms',
   async (_, { rejectWithValue }) => {
@@ -55,7 +55,7 @@ export const toggleRoomAvailability = createAsyncThunk(
     try {
       const { data } = await API.post('/toggle-availability', { roomId });
       if (!data.success) return rejectWithValue(data.message);
-      return { roomId }; // Backend successful hole shudhu ID pathiye local state update korbo
+      return { roomId };
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Update failed');
     }
@@ -65,10 +65,10 @@ export const toggleRoomAvailability = createAsyncThunk(
 const roomSlice = createSlice({
   name: 'room',
   initialState: {
-    rooms: [], // General users er jonno
-    ownerRooms: [], // Dashboard er jonno
+    rooms: [], // General available rooms
+    ownerRooms: [], // Owner specific rooms for dashboard
     loading: false,
-    success: false, // Room create successful check korar jonno
+    success: false, // Room create successful check
     error: null,
   },
   reducers: {
@@ -77,25 +77,28 @@ const roomSlice = createSlice({
     },
     resetRoomStatus: (state) => {
       state.success = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // CREATE ROOM
+      // --- CREATE ROOM ---
       .addCase(createRoom.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.success = false;
       })
       .addCase(createRoom.fulfilled, (state) => {
         state.loading = false;
-        state.success = true; // AddRoom component-e toast dekhate sahajyo korbe
+        state.success = true;
       })
       .addCase(createRoom.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.success = false;
       })
 
-      // GET ALL ROOMS
+      // --- GET ALL ROOMS ---
       .addCase(getAllRooms.pending, (state) => {
         state.loading = true;
       })
@@ -103,8 +106,12 @@ const roomSlice = createSlice({
         state.loading = false;
         state.rooms = action.payload;
       })
+      .addCase(getAllRooms.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
-      // GET OWNER ROOMS
+      // --- GET OWNER ROOMS ---
       .addCase(getOwnerRooms.pending, (state) => {
         state.loading = true;
       })
@@ -112,12 +119,17 @@ const roomSlice = createSlice({
         state.loading = false;
         state.ownerRooms = action.payload;
       })
+      .addCase(getOwnerRooms.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
-      // TOGGLE AVAILABILITY
+      // --- TOGGLE AVAILABILITY ---
       .addCase(toggleRoomAvailability.fulfilled, (state, action) => {
         const index = state.ownerRooms.findIndex((r) => r._id === action.payload.roomId);
         if (index !== -1) {
-          state.ownerRooms[index].isAisAvailable = !state.ownerRooms[index].isAisAvailable;
+          // Fix: isAisAvailable spelling fixed to isAvailable
+          state.ownerRooms[index].isAvailable = !state.ownerRooms[index].isAvailable;
         }
       });
   },

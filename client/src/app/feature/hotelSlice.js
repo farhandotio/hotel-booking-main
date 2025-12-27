@@ -11,7 +11,7 @@ export const registerHotel = createAsyncThunk(
   'hotel/registerHotel',
   async (hotelData, { rejectWithValue }) => {
     try {
-      const { data } = await API.post('/register', hotelData); // Route-ti ensure hoye nin
+      const { data } = await API.post('/', hotelData); // Route-ti ensure hoye nin
 
       // Backend logic: success spelling check (apnar code e 'succes' chilo)
       if (data.succes === false || data.success === false) {
