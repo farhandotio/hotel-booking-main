@@ -90,7 +90,7 @@ const AddRoom = () => {
   };
 
   return (
-    <form onSubmit={onSubmitHandelar} className="max-w-4xl">
+    <form onSubmit={onSubmitHandelar} className="max-w-4xl h-full">
       <Title
         align="left"
         font="outfit"

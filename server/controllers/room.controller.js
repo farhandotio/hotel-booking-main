@@ -50,7 +50,6 @@ export const createRoom = async (req, res) => {
 
 export const getRooms = async (req, res) => {
   try {
-    // FIX: Schema-te 'isAvailable' ache, tai eikhaner 'isAisAvailable' soriye felun
     const rooms = await roomModel
       .find({ isAvailable: true })
       .populate({
@@ -70,7 +69,7 @@ export const getRooms = async (req, res) => {
 export const getOwnerRooms = async (req, res) => {
   try {
     // Vul: await hotelModel({ owner: ... }) chilo, eita findOne hobe
-    const hotelData = await hotelModel.findOne({ owner: req.auth.userId });
+    const hotelData = await hotelModel.findOne({ owner: req.user._id });
 
     if (!hotelData) {
       return res.json({ success: false, message: 'Hotel not found' });

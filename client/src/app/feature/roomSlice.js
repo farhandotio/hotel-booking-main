@@ -126,10 +126,18 @@ const roomSlice = createSlice({
 
       // --- TOGGLE AVAILABILITY ---
       .addCase(toggleRoomAvailability.fulfilled, (state, action) => {
-        const index = state.ownerRooms.findIndex((r) => r._id === action.payload.roomId);
-        if (index !== -1) {
-          // Fix: isAisAvailable spelling fixed to isAvailable
-          state.ownerRooms[index].isAvailable = !state.ownerRooms[index].isAvailable;
+        const { roomId } = action.payload;
+
+        // Update in general rooms list
+        const roomIndex = state.rooms.findIndex((r) => r._id === roomId);
+        if (roomIndex !== -1) {
+          state.rooms[roomIndex].isAvailable = !state.rooms[roomIndex].isAvailable;
+        }
+
+        // Update in owner dashboard list
+        const ownerIndex = state.ownerRooms.findIndex((r) => r._id === roomId);
+        if (ownerIndex !== -1) {
+          state.ownerRooms[ownerIndex].isAvailable = !state.ownerRooms[ownerIndex].isAvailable;
         }
       });
   },
